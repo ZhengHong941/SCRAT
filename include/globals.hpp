@@ -29,7 +29,7 @@
 #define base_kd 0
 
 #define flipper_targetUp 240 //degrees
-#define flipper_targetDown 320 //degrees
+#define flipper_targetDown 325 //degrees
 #define flipper_kp -5
 #define flipper_kd 0
 #define flipper_ki 0
