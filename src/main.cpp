@@ -88,13 +88,27 @@ void cata_pid(){
     pros::Motor lc(lc_port);
     pros::Motor rc(rc_port);
     pros::Rotation catarot(catarot_port);
+    pros::Motor lf_base(lf_port);
+	pros::Motor lt_base(lt_port);
+	pros::Motor lb_base(lb_port);
+	pros::Motor rf_base(rf_port);
+	pros::Motor rt_base(rt_port);
+	pros::Motor rb_base(rb_port);
     while(true){
+        lf_base.brake();
+        lt_base.brake();
+        lb_base.brake();
+        rf_base.brake();
+        rt_base.brake();
+        rb_base.brake();
         int currentPos = catarot.get_position() / 100;
         cata_error = cata_target - currentPos;
         cata_d = cata_error - prev_cata_error;
         prev_cata_error = cata_error;
         correctingPow = cata_error * cata_kp + cata_d * cata_kd + cata_power;
-        //printf("CorrectingPow: %i \n", correctingPow);
+        printf("CorrectingPow: %i \n", correctingPow);
+        printf("Error: %i \n", cata_error);
+        printf("Position: %i \n", catarot.get_position()/100);
         if(shoot){
             lc.move(30);
             rc.move(30);
@@ -110,6 +124,7 @@ void cata_pid(){
         else {
             lc.move(0);
             rc.move(0);
+            printf("not moving \n");
         }
     }
 }
@@ -241,71 +256,83 @@ void opcontrol() {
 
     //resetting of flipper arm and cata position
     //not for actual auton code
-    IntakeTargetPosUp = true;
-    shoot = false;
-    pros::delay(5000);
+    // IntakeTargetPosUp = true;
+    // shoot = false;
+    // pros::delay(5000);
 
-    //fast shooting when Gupta hasn't reach the goal
-    for (int i = 1; i < 6; i++){
-    IntakeTargetPosUp = true;
-    shoot = true;
-    pros::delay(100);
-    IntakeTargetPosUp = false;
-    pros::delay(500);
-    RollerPow = 80;
-    pros::delay(100);
-    RollerPow = 120;
-    pros::delay(100);
-    RollerPow = 0;
-    pros::delay(50);
-    IntakeTargetPosUp = true;
-    pros::delay(700);
-    }
+    // //fast shooting when Gupta hasn't reach the goal
+    // for (int i = 1; i < 6; i++){
+    // IntakeTargetPosUp = true;
+    // shoot = true;
+    // pros::delay(100);
+    // RollerPow = 100;
+    // IntakeTargetPosUp = false;
+    // pros::delay(500);
+    // RollerPow = 100;
+    // pros::delay(150);
+    // // RollerPow = 120;
+    // // pros::delay(100);
+    // // RollerPow = 0;
+    // // pros::delay(50);
+    // IntakeTargetPosUp = true;
+    // RollerPow = 100;
+    // pros::delay(700);
+    // }
     //accurate shooting when Gupta is catching
-    for (int i = 1; i < 16; i++){
+    
     IntakeTargetPosUp = true;
-    shoot = true;
     pros::delay(100);
+    for (int i = 1; i < 23; i++){
     IntakeTargetPosUp = false;
-    pros::delay(500);
-    RollerPow = 80;
     pros::delay(100);
-    RollerPow = 120;
-    pros::delay(100);
+    shoot = true;
+    pros::delay(320);
+    RollerPow = 110;
+    pros::delay(140);
     RollerPow = 0;
+    pros::delay(20);
+    RollerPow = 110;
+    pros::delay(70);
+    RollerPow = 0;
+    pros::delay(10);
+    RollerPow = 100;
     pros::delay(50);
+    RollerPow = 0;
+    pros::delay(10);
     IntakeTargetPosUp = true;
-    pros::delay(1000);
+    pros::delay(880);
     }
     
 
-    //movement code
-    int a_l = 1000;
-	int a_r = 1000;
-	int b_l = 0;
-	int b_r = 980;
-	int c_l = 2650;
-	int c_r = 2300;
-	int d_l = 1000;
-	int d_r = -1000;
-	int e_l = -2300;
-	int e_r = -1750;
+    // //movement code
+    // int a_l = 1000;
+	// int a_r = 1000;
+	// int b_l = 0;
+	// int b_r = 980;
+	// int c_l = 2650;
+	// int c_r = 2300;
+	// int d_l = 1000;
+	// int d_r = -1000;
+	// int e_l = -2300;
+	// int e_r = -1750;
 	
-    //flipper arm must be up when moving
-    IntakeTargetPosUp = true;
+    // //flipper arm must be up when moving
+    // IntakeTargetPosUp = true;
 	
-	pidvalues(a_l, a_r);
-	pros::delay(800);
-	pidvalues(a_l+b_l, a_r+b_r);
-	pros::delay(400);
-	pidvalues(a_l+b_l+c_l, a_r+b_r+c_r);
-	lr.move(-1000);
-    rr.move(-1000);
-	pros::delay(1450);
-	pidvalues(a_l+b_l+c_l+d_l, a_r+b_r+c_r+d_r);
-	pros::delay(700);
-	pidvalues(a_l+b_l+c_l+d_l+e_l, a_r+b_r+c_r+d_r+e_r);
-	pros::delay(900);
+	// pidvalues(a_l, a_r);
+	// pros::delay(800);
+	// pidvalues(a_l+b_l, a_r+b_r);
+	// pros::delay(400);
+	// pidvalues(a_l+b_l+c_l, a_r+b_r+c_r);
+	// lr.move(-1000);
+    // rr.move(-1000);
+	// pros::delay(1450);
+	// pidvalues(a_l+b_l+c_l+d_l, a_r+b_r+c_r+d_r);
+	// pros::delay(700);
+	// pidvalues(a_l+b_l+c_l+d_l+e_l, a_r+b_r+c_r+d_r+e_r);
+    // lr.move(0);
+    // rr.move(0);
+	// pros::delay(900);
 
 
 
