@@ -25,7 +25,7 @@
 #define rr_port 11
 
 //pid valules
-#define base_kp 1.5
+#define base_kp 1.5  //1.5
 #define base_kd 0
 
 #define flipper_targetUp 240 //degrees

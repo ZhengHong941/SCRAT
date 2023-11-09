@@ -88,27 +88,21 @@ void cata_pid(){
     pros::Motor lc(lc_port);
     pros::Motor rc(rc_port);
     pros::Rotation catarot(catarot_port);
-    pros::Motor lf_base(lf_port);
-	pros::Motor lt_base(lt_port);
-	pros::Motor lb_base(lb_port);
-	pros::Motor rf_base(rf_port);
-	pros::Motor rt_base(rt_port);
-	pros::Motor rb_base(rb_port);
     while(true){
-        lf_base.brake();
-        lt_base.brake();
-        lb_base.brake();
-        rf_base.brake();
-        rt_base.brake();
-        rb_base.brake();
+        // lf_base.brake();
+        // lt_base.brake();
+        // lb_base.brake();
+        // rf_base.brake();
+        // rt_base.brake();
+        // rb_base.brake();
         int currentPos = catarot.get_position() / 100;
         cata_error = cata_target - currentPos;
         cata_d = cata_error - prev_cata_error;
         prev_cata_error = cata_error;
         correctingPow = cata_error * cata_kp + cata_d * cata_kd + cata_power;
-        printf("CorrectingPow: %i \n", correctingPow);
-        printf("Error: %i \n", cata_error);
-        printf("Position: %i \n", catarot.get_position()/100);
+        // printf("CorrectingPow: %i \n", correctingPow);
+        // printf("Error: %i \n", cata_error);
+        // printf("Position: %i \n", catarot.get_position()/100);
         if(shoot){
             lc.move(30);
             rc.move(30);
@@ -124,13 +118,13 @@ void cata_pid(){
         else {
             lc.move(0);
             rc.move(0);
-            printf("not moving \n");
+            // printf("not moving \n");
         }
     }
 }
 
 
-bool IntakeTargetPosUp;
+bool IntakeTargetPosUp = true;
 int RollerPow;
 float flipper_error;
 float prev_flipper_error;
@@ -165,6 +159,8 @@ void flipper_pid() {
         
         fs.move(flipper_error * flipper_kp + total_flipper_error * flipper_ki + flipper_d * flipper_kd);
         fr.move(RollerPow);
+        double flipperpow = flipper_error * flipper_kp + total_flipper_error * flipper_ki + flipper_d * flipper_kd;
+        //printf("flipper power: %d \n", flipperpow);
     }
 }
 
@@ -198,55 +194,149 @@ void initialize() {
     pros::Motor rr (lr_port, pros::E_MOTOR_GEARSET_18, true, pros::E_MOTOR_ENCODER_DEGREES);
 
     //pid tasks
-    pros::Task hardcode(pidmove);
+    //pros::Task hardcode(pidmove);
     pros::Task flipper(flipper_pid);
-    pros::Task cata(cata_pid);
+    // pros::Task cata(cata_pid);
+    // lf_base.tare_position();
+    // lt_base.tare_position();
+    // lb_base.tare_position();
+    // rf_base.tare_position();
+    // rt_base.tare_position();
+    // rb_base.tare_position();
+
 }
 
 void disabled() {}
 
 void competition_initialize() {}
 
-void autonomous() {}
+void autonomous() {
+    pros::Task hardcode(pidmove);
+    // pros::Task flipper(flipper_pid);
+    pros::Task cata(cata_pid);
+    IntakeTargetPosUp = true;
+    pros::delay(600);
+
+    for (int i = 1; i <= 23; i++){
+    IntakeTargetPosUp = false;
+    pros::delay(100);
+    shoot = true;
+    pros::delay(320);
+    RollerPow = 110;
+    pros::delay(140);
+    RollerPow = 0;
+    pros::delay(20);
+    RollerPow = 110;
+    pros::delay(70);
+    RollerPow = 0;
+    pros::delay(10);
+    RollerPow = 100;
+    pros::delay(50);
+    RollerPow = 0;
+    pros::delay(10);
+    IntakeTargetPosUp = true;
+    pros::delay(1200);
+    }
+    pros::delay(100);
+    shoot = true;
+    pros::delay(200);
+
+    pros::Motor lr(lr_port);
+    pros::Motor rr(rr_port);
+    //movement code
+    int a_l = 1000;
+	int a_r = 1000;
+	int b_l = 0;
+	int b_r = 980;
+	int c_l = 2700; //2650
+	int c_r = 2350; //2300
+	int d_l = 1050; //1000
+	int d_r = -1050; //-1000
+	int e_l = -2000; //-2300
+	int e_r = -1450; //-1750
+    int f_l = 450;
+    int f_r = 450;
+	
+    //flipper arm must be up when moving
+    IntakeTargetPosUp = true;
+	
+	pidvalues(a_l, a_r);
+	pros::delay(800);
+	pidvalues(a_l+b_l, a_r+b_r);
+	pros::delay(400);
+	pidvalues(a_l+b_l+c_l, a_r+b_r+c_r);
+	lr.move(-1000);
+    rr.move(-1000);
+	pros::delay(1450);
+	pidvalues(a_l+b_l+c_l+d_l, a_r+b_r+c_r+d_r);
+	pros::delay(700);
+	pidvalues(a_l+b_l+c_l+d_l+e_l, a_r+b_r+c_r+d_r+e_r);
+    lr.move(0);
+    rr.move(0);
+	pros::delay(900); //950
+    //adjusting at second matchload
+    pidvalues(a_l+b_l+c_l+d_l+e_l+f_l, a_r+b_r+c_r+d_r+e_r+f_r);
+    pros::delay(300);
+
+    for (int i = 1; i <= 10; i++){
+    IntakeTargetPosUp = false;
+    pros::delay(100);
+    shoot = true;
+    pros::delay(320);
+    RollerPow = 110;
+    pros::delay(140);
+    RollerPow = 0;
+    pros::delay(20);
+    RollerPow = 110;
+    pros::delay(70);
+    RollerPow = 0;
+    pros::delay(10);
+    RollerPow = 100;
+    pros::delay(50);
+    RollerPow = 0;
+    pros::delay(10);
+    IntakeTargetPosUp = true;
+    pros::delay(1000);
+    }
+}
 
 void opcontrol() {
+    pros::Controller master(CONTROLLER_MASTER);
 
-    // pros::Controller master(CONTROLLER_MASTER);
+	//base motors
+	pros::Motor lf_base(lf_port);
+	pros::Motor lt_base(lt_port);
+	pros::Motor lb_base(lb_port);
+	pros::Motor rf_base(rf_port);
+	pros::Motor rt_base(rt_port);
+	pros::Motor rb_base(rb_port);
 
-	// //base motors
-	// pros::Motor lf_base(lf_port);
-	// pros::Motor lt_base(lt_port);
-	// pros::Motor lb_base(lb_port);
-	// pros::Motor rf_base(rf_port);
-	// pros::Motor rt_base(rt_port);
-	// pros::Motor rb_base(rb_port);
+	//drive mode control
+	bool tankdrive = true;
 
-	// //drive mode control
-	// bool tankdrive = true;
-
-    // //flipper motors
-    // pros::Motor fs(fs_port);
-    // pros::Motor fr(fr_port);
-    // pros::Rotation flipperrot(flipperrot_port);
+    //flipper motors
+    pros::Motor fs(fs_port);
+    pros::Motor fr(fr_port);
+    pros::Rotation flipperrot(flipperrot_port);
 
 
     // bool IntakeTargetPosUp = true;
-    // int RollerPow = 0;
+    // int RollerPow = 127;
     // float flipper_error;
     // float prev_flipper_error;
     // float flipper_d;
     // float total_flipper_error;
 
-    // //cata motors
-    // pros::Motor lc(lc_port);
-    // pros::Motor rc(rc_port);
-    // pros::Rotation catarot(catarot_port);
+    //cata motors
+    pros::Motor lc(lc_port);
+    pros::Motor rc(rc_port);
+    pros::Rotation catarot(catarot_port);
 
-    // int cata_error;
-    // int prev_cata_error;
-    // int cata_d;
-    // uint32_t timestamp;
-    // int correctingPow;
+    int cata_error;
+    int prev_cata_error;
+    int cata_d;
+    uint32_t timestamp;
+    int correctingPow;
 
     //side rollers motor
     pros::Motor lr(lr_port);
@@ -254,13 +344,13 @@ void opcontrol() {
     
     //auton code ==================================
 
-    //resetting of flipper arm and cata position
-    //not for actual auton code
+    // resetting of flipper arm and cata position
+    // not for actual auton code
     // IntakeTargetPosUp = true;
     // shoot = false;
     // pros::delay(5000);
 
-    // //fast shooting when Gupta hasn't reach the goal
+    //fast shooting when Gupta hasn't reach the goal
     // for (int i = 1; i < 6; i++){
     // IntakeTargetPosUp = true;
     // shoot = true;
@@ -280,31 +370,31 @@ void opcontrol() {
     // }
     //accurate shooting when Gupta is catching
     
-    IntakeTargetPosUp = true;
-    pros::delay(100);
-    for (int i = 1; i < 23; i++){
-    IntakeTargetPosUp = false;
-    pros::delay(100);
-    shoot = true;
-    pros::delay(320);
-    RollerPow = 110;
-    pros::delay(140);
-    RollerPow = 0;
-    pros::delay(20);
-    RollerPow = 110;
-    pros::delay(70);
-    RollerPow = 0;
-    pros::delay(10);
-    RollerPow = 100;
-    pros::delay(50);
-    RollerPow = 0;
-    pros::delay(10);
-    IntakeTargetPosUp = true;
-    pros::delay(880);
-    }
+    // IntakeTargetPosUp = true;
+    // pros::delay(100);
+    // for (int i = 1; i < 23; i++){
+    // IntakeTargetPosUp = false;
+    // pros::delay(100);
+    // shoot = true;
+    // pros::delay(320);
+    // RollerPow = 110;
+    // pros::delay(140);
+    // RollerPow = 0;
+    // pros::delay(20);
+    // RollerPow = 110;
+    // pros::delay(70);
+    // RollerPow = 0;
+    // pros::delay(10);
+    // RollerPow = 100;
+    // pros::delay(50);
+    // RollerPow = 0;
+    // pros::delay(10);
+    // IntakeTargetPosUp = true;
+    // pros::delay(880);
+    // }
     
 
-    // //movement code
+    //movement code
     // int a_l = 1000;
 	// int a_r = 1000;
 	// int b_l = 0;
@@ -337,99 +427,121 @@ void opcontrol() {
 
 
 
-	// while(true){
-    //     //base control
-    //     double left, right;
-    //     if(master.get_digital_new_press(DIGITAL_Y)) tankdrive = !tankdrive;
-    //     if(tankdrive) {
-    //         left = master.get_analog(ANALOG_LEFT_Y);
-    //         right = master.get_analog(ANALOG_RIGHT_Y);
-    //     } 
+	while(true){
+        //base control
+        double left, right;
+        if(master.get_digital_new_press(DIGITAL_A)) tankdrive = !tankdrive;
+        if(tankdrive) {
+            left = master.get_analog(ANALOG_LEFT_Y);
+            right = master.get_analog(ANALOG_RIGHT_Y);
+        } 
                 
-    //     else {
-    //         double power =  master.get_analog(ANALOG_LEFT_Y);
-    //         double turn = master.get_analog(ANALOG_RIGHT_X);
-    //         left = power + turn;
-    //         right = power - turn;
-    //     }
+        else {
+            double power =  master.get_analog(ANALOG_LEFT_Y);
+            double turn = master.get_analog(ANALOG_RIGHT_X);
+            left = power + turn;
+            right = power - turn;
+        }
 
-    //     lf_base.move(left);
-    //     lt_base.move(left);
-    //     lb_base.move(left);
-    //     rf_base.move(right);
-    //     rt_base.move(right);
-    //     rb_base.move(right);
+        lf_base.move(left);
+        lt_base.move(left);
+        lb_base.move(left);
+        rf_base.move(right);
+        rt_base.move(right);
+        rb_base.move(right);
 
-    //     //flipper control
+        //flipper control
 
-    //     //update target speeds for I and update target position for flipper
-    //     if(master.get_digital_new_press(DIGITAL_X))
-    //         IntakeTargetPosUp = true; //move to up position
-    //     else if(master.get_digital_new_press(DIGITAL_B))
-    //         IntakeTargetPosUp = false; //move to down position
+        //update target speeds for I and update target position for flipper
+        if(master.get_digital_new_press(DIGITAL_Y))
+            IntakeTargetPosUp = true; //move to up position
+        else if(master.get_digital_new_press(DIGITAL_B))
+            IntakeTargetPosUp = false; //move to down position
 
-    //     if(master.get_digital(DIGITAL_DOWN))
-    //         RollerPow = 127;//roller outtake
-    //     else if(master.get_digital(DIGITAL_UP))
-    //         RollerPow = -127; //roller intake
-    //     else
-    //         RollerPow = 0; //roller stop
+        if(master.get_digital(DIGITAL_DOWN))
+            RollerPow = 127;//roller outtake
+        else if(master.get_digital(DIGITAL_RIGHT))
+            RollerPow = -127; //roller intake
+        else
+            RollerPow = 0; //roller stop
 
-    //     int currentPos = flipperrot.get_position() / 100;
-    //     //PID loop to get the arm to the target position
-    //     //calculates TargetOmegaA, and ActualOmegaFS will be changed according to the PID loop in order to reach the target encoder value given by flipper_target
+        // int currentPos = flipperrot.get_position() / 100;
+        // //PID loop to get the arm to the target position
+        // //calculates TargetOmegaA, and ActualOmegaFS will be changed according to the PID loop in order to reach the target encoder value given by flipper_target
         
-    //     if(IntakeTargetPosUp)
-    //         flipper_error = currentPos - flipper_targetUp;
-    //     else
-    //         flipper_error = currentPos - flipper_targetDown;
+        // if(IntakeTargetPosUp)
+        //     flipper_error = currentPos - flipper_targetUp;
+        // else
+        //     flipper_error = currentPos - flipper_targetDown;
 
-    //     prev_flipper_error = flipper_error;
-    //     total_flipper_error += flipper_error;
+        // flipper_d = flipper_error - prev_flipper_error;
+        // prev_flipper_error = flipper_error;
+        // total_flipper_error += flipper_error;
 
-    //     fs.move(-flipper_error * flipper_kp + total_flipper_error * flipper_ki + prev_flipper_error * flipper_kd);
-    //     fr.move(RollerPow);
+        // fs.move(flipper_error * flipper_kp + total_flipper_error * flipper_ki + prev_flipper_error * flipper_kd);
+        // fr.move(RollerPow);
+        // //double flipperpow = flipper_error * flipper_kp + total_flipper_error * flipper_ki + prev_flipper_error * flipper_kd;
+        // //printf("flipper power: %d \n", flipperpow);
 
+    if (master.get_digital(DIGITAL_R2)){
+        IntakeTargetPosUp = false;
+        pros::delay(420);
+        RollerPow = 110;
+        pros::delay(140);
+        RollerPow = 0;
+        pros::delay(20);
+        RollerPow = 110;
+        pros::delay(70);
+        RollerPow = 0;
+        pros::delay(10);
+        RollerPow = 100;
+        pros::delay(50);
+        RollerPow = 0;
+        pros::delay(10);
+        IntakeTargetPosUp = true;
+        pros::delay(1000);
+    }
+
+        //updating values of these global variables
         
-    //     //updating values of these global variables
-    //     cata_error = cata_target - catarot.get_position()/100;
-    //     cata_d = cata_error - prev_cata_error;
-    //     correctingPow = cata_error * cata_kp + cata_d * cata_kd + cata_power;
+        cata_error = cata_target - catarot.get_position()/100;
+        cata_d = cata_error - prev_cata_error;
+        correctingPow = cata_error * cata_kp + cata_d * cata_kd + cata_power;
         
-    //     // latest cata control
-    //     if(master.get_digital(DIGITAL_L2)){
-    //         lc.move(30);
-    //         rc.move(30);
-    //         timestamp = pros::millis();
-    //     }
+        // latest cata control
+        if(master.get_digital(DIGITAL_R1)){
+            lc.move(30);
+            rc.move(30);
+            timestamp = pros::millis();
+        }
         
-    //     else if(pros::millis() - timestamp > Catadelay){
-    //         //delay is time taken for catapult arm to fully fire
-    //         //timestamp records the moment from which the catapult began spinning and the slip gear slips
-    //         //after some delay, the catapult has fired and the slip gear can then begin to rewind
-    //         if(catarot.get_position() > cata_target //if we are still undershooting
-    //         && abs(cata_error) > allowedError){ //magnitude of catapult error is greater than allowed error
-    //             lc.move(correctingPow);
-    //             rc.move(correctingPow);
-    //         }
+        else if(pros::millis() - timestamp > Catadelay){
+            //delay is time taken for catapult arm to fully fire
+            //timestamp records the moment from which the catapult began spinning and the slip gear slips
+            //after some delay, the catapult has fired and the slip gear can then begin to rewind
+            if(catarot.get_position() > cata_target //if we are still undershooting
+            && abs(cata_error) > allowedError){ //magnitude of catapult error is greater than allowed error
+                lc.move(correctingPow);
+                rc.move(correctingPow);
+            }
 
-    //         else{
-    //             lc.move(0);
-    //             rc.move(0);
-    //         }
-    //     }
+            else{
+                lc.move(0);
+                rc.move(0);
+            }
+        }
         
-    //     //cata debugging
-    //     // printf("Position: %i \n", catarot.get_position()/100);
-    //     // printf("Error: %i \n", cata_error);
-    //     // printf("CorrectingPow: %i \n", correctingPow);
-    //     // printf("Current: %i \n", lc.get_current_draw());
+        //cata debugging
+        // printf("Position: %i \n", catarot.get_position()/100);
+        // printf("Error: %i \n", cata_error);
+        // printf("CorrectingPow: %i \n", correctingPow);
+        // printf("Current: %i \n", lc.get_current_draw());
 
-    //     //side rollers control
-    //     lr.move(100 * (master.get_digital(DIGITAL_R2) - master.get_digital(DIGITAL_R1)));
-    //     rr.move(100 * (master.get_digital(DIGITAL_R2) - master.get_digital(DIGITAL_R1)));
+        //side rollers control
+        lr.move(100 * (master.get_digital(DIGITAL_L2) - master.get_digital(DIGITAL_L1)));
+        rr.move(100 * (master.get_digital(DIGITAL_L2) - master.get_digital(DIGITAL_L1)));
 
 
-    //     pros::delay(5);
-	// }
+        pros::delay(5);
+	}
 }
