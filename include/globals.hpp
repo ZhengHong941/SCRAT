@@ -38,7 +38,7 @@
 #define cata_kd 0
 #define Catadelay 400
 #define allowedError 2
-#define cata_target 353 //216
+#define cata_target 350 //216
 #define cata_power 50
 
 #endif

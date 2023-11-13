@@ -4,7 +4,6 @@
 #include "pros/misc.h"
 #include "pros/motors.h"
 
-
 double prevErrorLeft = 0;
 double prevErrorRight = 0;
 double encdleft = 0;
@@ -104,8 +103,8 @@ void cata_pid(){
         // printf("Error: %i \n", cata_error);
         // printf("Position: %i \n", catarot.get_position()/100);
         if(shoot){
-            lc.move(30);
-            rc.move(30);
+            lc.move(40);
+            rc.move(40);
             pros::delay(500);
             shoot = false;
             pros::delay(Catadelay);
@@ -196,7 +195,7 @@ void initialize() {
     //pid tasks
     //pros::Task hardcode(pidmove);
     pros::Task flipper(flipper_pid);
-    // pros::Task cata(cata_pid);
+    pros::Task cata(cata_pid);
     // lf_base.tare_position();
     // lt_base.tare_position();
     // lb_base.tare_position();
@@ -213,7 +212,7 @@ void competition_initialize() {}
 void autonomous() {
     pros::Task hardcode(pidmove);
     // pros::Task flipper(flipper_pid);
-    pros::Task cata(cata_pid);
+    // pros::Task cata(cata_pid);
     IntakeTargetPosUp = true;
     pros::delay(600);
 
@@ -250,10 +249,10 @@ void autonomous() {
 	int b_r = 980;
 	int c_l = 2700; //2650
 	int c_r = 2350; //2300
-	int d_l = 1050; //1000
-	int d_r = -1050; //-1000
-	int e_l = -2000; //-2300
-	int e_r = -1450; //-1750
+	int d_l = 1000; //1000
+	int d_r = -1000; //-1000
+	int e_l = -2300; //-2300
+	int e_r = -1750; //-1750
     int f_l = 450;
     int f_r = 450;
 	
@@ -483,6 +482,34 @@ void opcontrol() {
         // //double flipperpow = flipper_error * flipper_kp + total_flipper_error * flipper_ki + prev_flipper_error * flipper_kd;
         // //printf("flipper power: %d \n", flipperpow);
 
+    if (master.get_digital(DIGITAL_LEFT)){
+        for (int i = 1; i <= 23; i++){
+            IntakeTargetPosUp = false;
+            pros::delay(100);
+            shoot = true;
+            pros::delay(320);
+            RollerPow = 110;
+            pros::delay(140);
+            RollerPow = 0;
+            pros::delay(20);
+            RollerPow = 110;
+            pros::delay(70);
+            RollerPow = 0;
+            pros::delay(10);
+            RollerPow = 100;
+            pros::delay(50);
+            RollerPow = 0;
+            pros::delay(10);
+            IntakeTargetPosUp = true;
+            pros::delay(1200);
+            }
+            pros::delay(100);
+            shoot = true;
+            pros::delay(200);
+    }
+
+
+
     if (master.get_digital(DIGITAL_R2)){
         IntakeTargetPosUp = false;
         pros::delay(420);
@@ -499,37 +526,38 @@ void opcontrol() {
         RollerPow = 0;
         pros::delay(10);
         IntakeTargetPosUp = true;
-        pros::delay(1000);
+        pros::delay(10);
     }
 
         //updating values of these global variables
         
-        cata_error = cata_target - catarot.get_position()/100;
-        cata_d = cata_error - prev_cata_error;
-        correctingPow = cata_error * cata_kp + cata_d * cata_kd + cata_power;
+        // cata_error = cata_target - catarot.get_position()/100;
+        // cata_d = cata_error - prev_cata_error;
+        // correctingPow = cata_error * cata_kp + cata_d * cata_kd + cata_power;
         
         // latest cata control
         if(master.get_digital(DIGITAL_R1)){
-            lc.move(30);
-            rc.move(30);
-            timestamp = pros::millis();
+            shoot = true;
+            // lc.move(40);
+            // rc.move(40);
+            // timestamp = pros::millis();
         }
         
-        else if(pros::millis() - timestamp > Catadelay){
-            //delay is time taken for catapult arm to fully fire
-            //timestamp records the moment from which the catapult began spinning and the slip gear slips
-            //after some delay, the catapult has fired and the slip gear can then begin to rewind
-            if(catarot.get_position() > cata_target //if we are still undershooting
-            && abs(cata_error) > allowedError){ //magnitude of catapult error is greater than allowed error
-                lc.move(correctingPow);
-                rc.move(correctingPow);
-            }
+        // else if(pros::millis() - timestamp > Catadelay){
+        //     //delay is time taken for catapult arm to fully fire
+        //     //timestamp records the moment from which the catapult began spinning and the slip gear slips
+        //     //after some delay, the catapult has fired and the slip gear can then begin to rewind
+        //     if(catarot.get_position() > cata_target //if we are still undershooting
+        //     && abs(cata_error) > allowedError){ //magnitude of catapult error is greater than allowed error
+        //         lc.move(correctingPow);
+        //         rc.move(correctingPow);
+        //     }
 
-            else{
-                lc.move(0);
-                rc.move(0);
-            }
-        }
+        //     else{
+        //         lc.move(0);
+        //         rc.move(0);
+        //     }
+        // }
         
         //cata debugging
         // printf("Position: %i \n", catarot.get_position()/100);
